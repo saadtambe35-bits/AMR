@@ -1,0 +1,293 @@
+// =============================================================================
+// SwarmEdge v2 - System Data Contracts (Protobuf, proto3)
+// =============================================================================
+// Transport : Eclipse Zenoh (peer mode, brokerless). Payload = serialized proto.
+// Sharding  : Spatial zone topics. Zone id = "{gx}_{gy}" (grid cell, e.g. 10 m).
+//             A robot publishes to its current zone and subscribes to its own
+//             zone + the 8 neighbouring zones. This bounds per-robot bandwidth by
+//             LOCAL density, not fleet size.
+//
+// TOPIC MAP (key expressions)
+//   swarm/zone/{zone}/state        StateBeat        10 Hz, best-effort, drop-oldest
+//   swarm/node/{node_id}/lease     LeaseRequest / LeaseClaim / LeaseRelease
+//                                  event-driven, reliable, small
+//   swarm/task/announce            TaskAnnounce     event-driven, reliable
+//   swarm/task/bid/{task_id}       TaskBid          event-driven, reliable
+//   swarm/task/award               TaskAward        event-driven, reliable
+//   swarm/task/status/{robot_id}   TaskStatus       1 Hz + on change (task lease renewal)
+//   swarm/hazard/gossip            HazardReport / HazardDigest   gossip, see PRD
+//   swarm/sos                      SosBroadcast     event-driven, reliable, repeated 3x
+//   sim/chaos                      ChaosCommand     consumed ONLY by sim + net emulator
+//                                                   (robots never subscribe to this)
+//
+// The observer ("Ghost Node") subscribes to swarm/** and NEVER publishes.
+// The observer's publish counter is displayed on the dashboard and must read 0.
+//
+// COMPATIBILITY RULES
+//   - Never reuse or renumber a field. Add new fields with new numbers.
+//   - Every message on swarm/** carries a Header (robot_id, seq, timestamps).
+//   - Receivers drop messages with a stale seq (seq <= last seen for sender)
+//     on state topics, and drop messages whose clock skew exceeds MAX_CLOCK_SKEW_S.
+// =============================================================================
+
+syntax = "proto3";
+
+package swarmedge.v1;
+
+// -----------------------------------------------------------------------------
+// Common types
+// -----------------------------------------------------------------------------
+
+message Header {
+  string robot_id       = 1;  // e.g. "amr_01"
+  uint64 seq            = 2;  // per-sender monotonic counter
+  double sent_at        = 3;  // sender clock, seconds (unix epoch)
+  uint32 schema_version = 4;  // bump on breaking change
+}
+
+message Pose {
+  float x     = 1;  // metres, world frame
+  float y     = 2;
+  float theta = 3;  // radians, [-pi, pi]
+}
+
+message Velocity {
+  float linear  = 1;  // m/s
+  float angular = 2;  // rad/s
+}
+
+message Point2D {
+  float x = 1;
+  float y = 2;
+}
+
+enum RobotState {
+  ROBOT_STATE_UNSPECIFIED = 0;
+  IDLE                    = 1;
+  EN_ROUTE                = 2;
+  WAITING_FOR_LEASE       = 3;
+  CROSSING                = 4;
+  YIELDING                = 5;
+  BACKING_OFF             = 6;
+  PICKING                 = 7;
+  DROPPING                = 8;
+  CHARGING                = 9;
+  FAULTED                 = 10;
+}
+
+// -----------------------------------------------------------------------------
+// A. State + intent beacon (10 Hz)
+// -----------------------------------------------------------------------------
+
+message IntentPoint {
+  float  t_delta = 1;  // seconds from header.sent_at
+  float  x       = 2;
+  float  y       = 3;
+}
+
+message StateBeat {
+  Header      header   = 1;
+  Pose        pose     = 2;
+  Velocity    velocity = 3;
+
+  // Physical / kinematic parameters (heterogeneous fleet support).
+  // Sent every beat; small, and lets late joiners learn peers instantly.
+  float       radius_m      = 4;  // footprint radius (inflated disc)
+  float       mass_kg       = 5;  // empty robot mass
+  float       payload_kg    = 6;
+  float       max_decel_mps2 = 7; // at current payload
+  float       v_max_mps     = 8;
+
+  float       battery_pct   = 9;  // 0..100
+  RobotState  state         = 10;
+
+  // Roadmap context (topological graph)
+  uint32      current_edge  = 11;  // edge id the robot is on (0 = none)
+  uint32      next_node     = 12;  // node id it is heading to (0 = none)
+
+  // Dead-reckoned / planned intent, typically 3 s at 1 s spacing (3-5 points)
+  repeated IntentPoint intent_horizon = 13;
+
+  // Pose uncertainty (trace of position covariance). Used to inflate peers.
+  float       pos_uncertainty_m = 14;
+}
+
+// -----------------------------------------------------------------------------
+// B. Intersection negotiation (lease-based right-of-way)
+// -----------------------------------------------------------------------------
+// Protocol summary (full state machine in PRD section 6):
+//   1. Approaching robot broadcasts LeaseRequest for node N.
+//   2. Every robot deterministically ranks the requests it has seen:
+//        order by bid.total DESC, then robot_id ASC.
+//   3. The head-of-queue robot broadcasts LeaseClaim with a short TTL.
+//   4. Others yield until the claim is released or expires.
+//   5. Holder broadcasts LeaseRelease on exit. Expiry releases automatically.
+//   Silence = yield. Safety never depends on winning (ORCA stays active).
+
+message BidBreakdown {
+  float urgency        = 1;  // task deadline / priority term, normalised 0..1
+  float kinetic_energy_j = 2; // 0.5 * (mass+payload) * v^2
+  float wait_age_s     = 3;  // seconds this robot has waited for this node
+  float total          = 4;  // combined scalar (weights in PRD section 6.2)
+}
+
+message LeaseRequest {
+  Header       header        = 1;
+  string       request_id    = 2;   // e.g. "req_amr02_000123"
+  uint32       node_id       = 3;
+  uint32       entry_edge    = 4;
+  uint32       exit_edge     = 5;
+  float        eta_s         = 6;   // time until robot reaches node boundary
+  float        crossing_duration_s = 7;  // estimated occupancy time
+  BidBreakdown bid           = 8;
+}
+
+message LeaseClaim {
+  Header header      = 1;
+  string request_id  = 2;
+  uint32 node_id     = 3;
+  double valid_from  = 4;   // sender clock
+  double valid_until = 5;   // hard expiry (TTL), sender clock
+  // Ranking evidence so peers can verify the claim is consistent with the
+  // requests they have seen (used to reject bogus claims).
+  float  bid_total   = 6;
+}
+
+message LeaseRelease {
+  Header header     = 1;
+  string request_id = 2;
+  uint32 node_id    = 3;
+}
+
+// -----------------------------------------------------------------------------
+// C. Task allocation (Contract Net Protocol with task leases)
+// -----------------------------------------------------------------------------
+// TaskAnnounce is published by an "order injector" that is itself just a peer
+// (simulated WMS feed). It has no authority: if it dies, running tasks continue.
+// Award rule: after bid window T_BID, the lowest cost wins (ties: lowest robot_id).
+// The winner self-announces TaskAward; other bidders verify against bids seen.
+
+message TaskAnnounce {
+  Header header       = 1;
+  string task_id      = 2;
+  uint32 pickup_node  = 3;
+  uint32 dropoff_node = 4;
+  float  payload_kg   = 5;
+  float  priority     = 6;   // 0..1
+  double deadline     = 7;   // sender clock, 0 = none
+  float  bid_window_s = 8;
+}
+
+message TaskCost {
+  float distance_m   = 1;
+  float battery_term = 2;  // (1 - battery_pct/100), 0..1
+  float queue_len    = 3;  // tasks already held
+  float total        = 4;  // alpha*d + beta*(1-b) + gamma*queue
+}
+
+message TaskBid {
+  Header   header  = 1;
+  string   task_id = 2;
+  TaskCost cost    = 3;
+}
+
+message TaskAward {
+  Header header       = 1;
+  string task_id      = 2;
+  string winner_id    = 3;
+  float  lease_ttl_s  = 4;  // winner must renew via TaskStatus before expiry
+  uint32 attempt      = 5;  // increments on every re-auction (0 = first award)
+}
+
+enum TaskPhase {
+  TASK_PHASE_UNSPECIFIED = 0;
+  ASSIGNED   = 1;
+  TO_PICKUP  = 2;
+  PICKING_UP = 3;
+  TO_DROPOFF = 4;
+  DELIVERED  = 5;
+  ABORTED    = 6;   // voluntary release, triggers immediate re-announce
+}
+
+message TaskStatus {
+  Header    header   = 1;
+  string    task_id  = 2;
+  TaskPhase phase    = 3;
+  float     progress = 4;  // 0..1
+  // Publishing TaskStatus renews the task lease. If the lease expires without
+  // renewal (robot dead / partitioned), peers re-announce the task with
+  // attempt+1. Duplicate execution is prevented by the higher 'attempt' winning.
+}
+
+// -----------------------------------------------------------------------------
+// D. Hazards, gossip and SOS
+// -----------------------------------------------------------------------------
+
+enum HazardType {
+  HAZARD_TYPE_UNSPECIFIED = 0;
+  BLOCKED_EDGE            = 1;  // aisle closed (edge_id valid)
+  SLOW_ZONE               = 2;  // speed limit in circle
+  SOS_GEOFENCE            = 3;  // no-go circle from a faulted robot
+}
+
+message HazardReport {
+  Header     header    = 1;
+  string     hazard_id = 2;   // globally unique, e.g. "hz_amr03_0007"
+  HazardType type      = 3;
+  uint32     edge_id   = 4;   // for BLOCKED_EDGE
+  Point2D    center    = 5;   // for circular hazards
+  float      radius_m  = 6;
+  float      speed_limit_mps = 7;  // for SLOW_ZONE
+  double     expires_at = 8;  // absolute, sender clock
+  uint32     version   = 9;   // increments on update; higher version wins
+  string     origin_id = 10;  // first reporter
+  uint32     hop_count = 11;  // incremented per relay; used to damp gossip
+}
+
+// Anti-entropy: periodically each robot gossips digests to a few random peers;
+// a peer that lacks an id or holds a lower version requests/pushes the report.
+message HazardDigestEntry {
+  string hazard_id = 1;
+  uint32 version   = 2;
+}
+
+message HazardDigest {
+  Header header = 1;
+  repeated HazardDigestEntry entries = 2;
+}
+
+message SosBroadcast {
+  Header header     = 1;
+  string fault_code = 2;   // e.g. "MOTOR_STALL", "LIDAR_LOSS", "BATTERY_CRIT"
+  Pose   pose       = 3;
+  float  radius_m   = 4;   // suggested exclusion radius
+  float  ttl_s      = 5;
+}
+
+// -----------------------------------------------------------------------------
+// E. Simulation-only control (Chaos Console). NOT part of the robot contract.
+// -----------------------------------------------------------------------------
+
+enum ChaosType {
+  CHAOS_TYPE_UNSPECIFIED = 0;
+  KILL_ROBOT             = 1;  // SIGKILL the robot process (hard failure)
+  STALL_ROBOT            = 2;  // robot alive but motors dead (soft failure)
+  PARTITION_NETWORK      = 3;  // split fleet into groups (netem/iptables)
+  PACKET_LOSS            = 4;  // params: loss_pct
+  LATENCY_SPIKE          = 5;  // params: delay_ms, jitter_ms
+  BLOCK_AISLE            = 6;  // params: edge_id
+  ADD_ROBOTS             = 7;  // params: count
+  KILL_COORDINATOR       = 8;  // only used in the Server-Kill Duel baseline
+  BYZANTINE_TELEMETRY    = 9;  // robot emits impossible kinematic jumps
+}
+
+message ChaosCommand {
+  ChaosType type      = 1;
+  string    target_id = 2;      // robot id or empty for fleet-wide
+  float     loss_pct  = 3;
+  float     delay_ms  = 4;
+  float     jitter_ms = 5;
+  uint32    edge_id   = 6;
+  uint32    count     = 7;
+  float     duration_s = 8;     // 0 = until cleared
+}

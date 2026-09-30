@@ -1,0 +1,13 @@
+{
+  "name": "SwarmEdge AMR Cockpit",
+  "short_name": "SwarmEdge",
+  "description": "Offline-first supervisory cockpit for an edge AMR swarm",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#070b12",
+  "theme_color": "#0ea5e9",
+  "icons": [
+    { "src": "/icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

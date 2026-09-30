@@ -1,0 +1,227 @@
+/* SwarmEdge v2 — Warm Tactile Glassmorphism & Sandstone Neumorphic Hybrid.
+   Tailwind v3 directives. On Tailwind v4, replace the three @tailwind lines with: @import "tailwindcss"; */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --se-canvas: #f5f3ec;
+  --se-well-bg: #ede9df;
+  --se-well-border: rgba(215, 208, 195, 0.9);
+  --se-font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --se-font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background-color: var(--se-canvas);
+  color: #57534e; /* stone-600 */
+  font-family: var(--se-font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.font-mono {
+  font-family: var(--se-font-mono);
+}
+
+:focus-visible {
+  outline: 2px solid #0ea5e9;
+  outline-offset: 2px;
+}
+
+/* ------------------------------------------------------------------ */
+/* Skin-glass card                                                     */
+/* ------------------------------------------------------------------ */
+
+.skin-glass {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.78) 0%, rgba(255, 255, 255, 0.52) 100%);
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.88);
+  /* Ambient drop, contact drop, inner top highlight. */
+  box-shadow:
+    0 8px 26px -4px rgba(150, 135, 115, 0.14),
+    0 1px 2px rgba(150, 135, 115, 0.1),
+    inset 0 1px 1.5px rgba(255, 255, 255, 0.95);
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+/* Specular sheen: hairline along the top edge. */
+.skin-glass::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1.5px;
+  pointer-events: none;
+  z-index: 1;
+  background: linear-gradient(
+    90deg,
+    transparent 4%,
+    rgba(255, 255, 255, 0.85) 25%,
+    rgba(255, 255, 255, 1) 50%,
+    rgba(255, 255, 255, 0.85) 75%,
+    transparent 96%
+  );
+}
+
+.skin-glass--interactive {
+  cursor: pointer;
+}
+
+.skin-glass--interactive:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    0 12px 32px -4px rgba(150, 135, 115, 0.2),
+    0 1px 2px rgba(150, 135, 115, 0.12),
+    inset 0 1px 1.5px rgba(255, 255, 255, 0.95);
+}
+
+.skin-glass--pad-none { padding: 0; }
+.skin-glass--pad-sm { padding: 12px; }
+.skin-glass--pad-md { padding: 20px; }
+.skin-glass--pad-lg { padding: 28px; }
+
+/* ------------------------------------------------------------------ */
+/* Cockpit chip                                                        */
+/* ------------------------------------------------------------------ */
+
+.cockpit-chip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  overflow: hidden;
+  border-radius: 9999px;
+  background: linear-gradient(145deg, #221b16, #15110e);
+  border: 1px solid rgba(217, 180, 150, 0.28);
+  color: rgba(235, 220, 200, 0.92);
+  font-family: var(--se-font-mono);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  white-space: nowrap;
+  box-shadow: 0 2px 6px -1px rgba(21, 17, 14, 0.35), inset 0 1px 0 rgba(255, 240, 220, 0.08);
+}
+
+.cockpit-chip--sm { padding: 2px 8px; font-size: 10px; line-height: 16px; }
+.cockpit-chip--md { padding: 4px 12px; font-size: 12px; line-height: 16px; }
+
+.cockpit-chip::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  transform: translateX(-120%);
+  background: linear-gradient(105deg, transparent 30%, rgba(255, 240, 220, 0.22) 50%, transparent 70%);
+}
+
+.cockpit-chip:hover::after {
+  animation: cockpit-shimmer 900ms ease-out 1;
+}
+
+@keyframes cockpit-shimmer {
+  from { transform: translateX(-120%); }
+  to { transform: translateX(120%); }
+}
+
+/* ------------------------------------------------------------------ */
+/* Recessed neumorphic well                                            */
+/* ------------------------------------------------------------------ */
+
+.recessed-well {
+  background: #ede9df;
+  border: 1px solid rgba(215, 208, 195, 0.9);
+  box-shadow:
+    inset 2px 2px 5px rgba(175, 165, 150, 0.22),
+    inset -1px -1px 3px rgba(255, 255, 255, 0.85);
+  border-radius: 8px;
+}
+
+.recessed-well--meter { padding: 6px 8px; }
+.recessed-well--input { padding: 8px 12px; }
+.recessed-well--input:focus-within {
+  border-color: rgba(14, 165, 233, 0.55);
+  box-shadow:
+    inset 2px 2px 5px rgba(175, 165, 150, 0.22),
+    inset -1px -1px 3px rgba(255, 255, 255, 0.85),
+    0 0 0 3px rgba(14, 165, 233, 0.16);
+}
+
+.recessed-well--pad-none { padding: 0; }
+.recessed-well--pad-sm { padding: 8px; }
+.recessed-well--pad-md { padding: 12px; }
+.recessed-well--pad-lg { padding: 20px; }
+
+.recessed-progress {
+  height: 8px;
+  overflow: hidden;
+  border-radius: 9999px;
+}
+
+.recessed-progress__fill {
+  height: 100%;
+  border-radius: 9999px;
+  background: var(--led-hex);
+  box-shadow: 0 0 6px rgba(var(--led-rgb), 0.55);
+  transition: width 300ms ease;
+}
+
+/* ------------------------------------------------------------------ */
+/* Optical LED pip                                                     */
+/* ------------------------------------------------------------------ */
+
+.led-pip {
+  display: inline-block;
+  flex: none;
+  border-radius: 9999px;
+  background: var(--led-hex);
+  box-shadow: 0 0 10px rgba(var(--led-rgb), 0.65), 0 0 2px var(--led-hex);
+  animation: led-breathe 3s ease-in-out infinite;
+}
+
+.led-pip--still { animation: none; }
+
+.led-pip--emerald { --led-hex: #10b981; --led-rgb: 16, 185, 129; }
+.led-pip--amber { --led-hex: #f59e0b; --led-rgb: 245, 158, 11; }
+.led-pip--rose { --led-hex: #ef4444; --led-rgb: 239, 68, 68; }
+.led-pip--sky { --led-hex: #0ea5e9; --led-rgb: 14, 165, 233; }
+
+/* Shared by the progress fill so it can pick up a tone. */
+.tone-emerald { --led-hex: #10b981; --led-rgb: 16, 185, 129; }
+.tone-amber { --led-hex: #f59e0b; --led-rgb: 245, 158, 11; }
+.tone-rose { --led-hex: #ef4444; --led-rgb: 239, 68, 68; }
+.tone-sky { --led-hex: #0ea5e9; --led-rgb: 14, 165, 233; }
+
+@keyframes led-breathe {
+  0%, 100% {
+    box-shadow: 0 0 10px rgba(var(--led-rgb), 0.65), 0 0 2px var(--led-hex);
+  }
+  50% {
+    box-shadow: 0 0 5px rgba(var(--led-rgb), 0.3), 0 0 2px var(--led-hex);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .led-pip,
+  .cockpit-chip:hover::after {
+    animation: none;
+  }
+  .skin-glass,
+  .skin-glass--interactive:hover,
+  .recessed-progress__fill {
+    transition: none;
+    transform: none;
+  }
+}

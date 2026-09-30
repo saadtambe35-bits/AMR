@@ -1,0 +1,766 @@
+/* SwarmEdge v02 — Warm Tactile Glassmorphism & Sandstone Neumorphic Hybrid Design System */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg-sandstone: #ece7dc;
+  --stone-text-main: #2b2621;
+  --stone-text-sub: #6e675f;
+
+  --ink-primary: #2b2621;
+  --ink-secondary: #6e675f;
+  --ink-muted: #8f887f;
+
+  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background-color: var(--bg-sandstone);
+  color: var(--stone-text-main);
+  background-image: 
+    radial-gradient(at 100% 0%, rgba(255, 255, 255, 0.4) 0px, transparent 50%),
+    radial-gradient(at 0% 100%, rgba(215, 200, 180, 0.3) 0px, transparent 50%);
+  background-attachment: fixed;
+  font-family: var(--font-sans);
+  letter-spacing: -0.015em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: var(--stone-text-main);
+  letter-spacing: -0.025em;
+  font-weight: 800;
+}
+
+.font-mono {
+  font-family: var(--font-mono);
+  font-feature-settings: "tnum" on, "zero" on;
+}
+
+/* 1. PHYSICAL OPTICAL SKIN-GLASS CARD */
+.skin-glass-card,
+.skin-glass,
+.se-glass {
+  position: relative;
+  background: linear-gradient(
+    135deg, 
+    rgba(255, 255, 255, 0.85) 0%, 
+    rgba(255, 255, 255, 0.62) 60%,
+    rgba(248, 245, 238, 0.48) 100%
+  ) !important;
+  backdrop-filter: blur(24px) saturate(170%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(170%) !important;
+  border-radius: 20px !important;
+  border: 1px solid rgba(255, 255, 255, 0.95) !important;
+  border-bottom-color: rgba(180, 165, 145, 0.45) !important;
+  border-right-color: rgba(190, 175, 155, 0.45) !important;
+  box-shadow: 
+    0 0 0 1px rgba(210, 195, 175, 0.4),
+    0 16px 36px -10px rgba(125, 110, 90, 0.18),
+    0 4px 12px -2px rgba(125, 110, 90, 0.08),
+    inset 0 1px 2px 0 rgba(255, 255, 255, 1),
+    inset 0 -1px 2px 0 rgba(160, 145, 125, 0.15) !important;
+  overflow: hidden;
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.skin-glass-card:hover,
+.skin-glass:hover,
+.se-glass:hover {
+  transform: translateY(-2px);
+  box-shadow: 
+    0 0 0 1px rgba(195, 180, 160, 0.5),
+    0 24px 48px -12px rgba(115, 100, 80, 0.24),
+    0 6px 16px -2px rgba(115, 100, 80, 0.12),
+    inset 0 1px 2.5px 0 rgba(255, 255, 255, 1),
+    inset 0 -1px 2px 0 rgba(160, 145, 125, 0.18) !important;
+}
+
+/* Crisp top edge prism sheen */
+.skin-glass-card::before,
+.skin-glass::before,
+.se-glass::before,
+.specular-sheen::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1.5px;
+  background: linear-gradient(
+    90deg, 
+    transparent 0%, 
+    rgba(255, 255, 255, 0.4) 15%, 
+    rgba(255, 255, 255, 1) 50%, 
+    rgba(255, 255, 255, 0.4) 85%, 
+    transparent 100%
+  );
+  pointer-events: none;
+  z-index: 2;
+}
+
+.skin-glass--pad-none { padding: 0; }
+.skin-glass--pad-sm   { padding: 10px; }
+.skin-glass--pad-md   { padding: 16px; }
+.skin-glass--pad-lg   { padding: 22px; }
+
+/* 2. SCULPTED NEUMORPHIC WELLS (For search, slider tracks, telemetry bars, and 2D canvas) */
+.neumorphic-inset,
+.recessed-well,
+.se-well {
+  background: #e3ded2 !important;
+  border: 1px solid rgba(255, 255, 255, 0.5) !important;
+  border-top-color: rgba(140, 125, 105, 0.3) !important;
+  border-left-color: rgba(140, 125, 105, 0.24) !important;
+  box-shadow: 
+    inset 3px 3px 6px rgba(130, 115, 95, 0.22),
+    inset -2px -2px 5px rgba(255, 255, 255, 0.95),
+    0 1px 2px rgba(255, 255, 255, 0.75) !important;
+  border-radius: 12px !important;
+  position: relative;
+}
+
+/* 3. CONVEX TACTILE BUTTONS & PILLS (Raised dome effect) */
+.tactile-convex-btn,
+.tactile-convex,
+.neumorphic-convex {
+  background: linear-gradient(145deg, #ffffff 0%, #ebe5d8 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.9) !important;
+  border-bottom-color: rgba(160, 145, 125, 0.3) !important;
+  box-shadow: 
+    3px 4px 10px rgba(140, 125, 105, 0.16),
+    -2px -2px 6px rgba(255, 255, 255, 0.95),
+    inset 0 1px 1px rgba(255, 255, 255, 0.8) !important;
+  color: #2b2621 !important;
+  font-weight: 600;
+  transition: all 0.15s ease;
+}
+
+.tactile-convex-btn:active,
+.tactile-convex:active,
+.neumorphic-convex:active {
+  transform: translateY(1px);
+  box-shadow: 
+    inset 2px 2px 5px rgba(130, 115, 95, 0.25),
+    inset -1px -1px 3px rgba(255, 255, 255, 0.8) !important;
+}
+
+/* 4. AEROSPACE COCKPIT DARK CHIPS & SHINY ESPRESSO BOXES */
+.cockpit-dark-chip,
+.se-chip,
+.sk-tag:not(.ok),
+.sg-digest,
+.sg-chip,
+.se-count,
+.cc-chip,
+.cc-tchip.is-sel {
+  position: relative;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 12px;
+  /* Dual-layer high-gloss sheen over warm roasted hazelnut espresso (soft on the eyes, rich & premium) */
+  background: 
+    linear-gradient(180deg, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0.04) 42%, rgba(0, 0, 0, 0.08) 43%, transparent 100%),
+    linear-gradient(145deg, #3f352c 0%, #2e261f 55%, #231c16 100%) !important;
+  border: 1px solid rgba(225, 195, 165, 0.45) !important;
+  border-top-color: rgba(255, 245, 230, 0.75) !important;
+  border-bottom-color: rgba(135, 105, 80, 0.45) !important;
+  border-radius: 9px !important;
+  color: rgba(246, 238, 226, 0.96) !important;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace !important;
+  font-weight: 700 !important;
+  font-size: 11.5px !important;
+  letter-spacing: 0.025em !important;
+  cursor: pointer;
+  box-shadow: 
+    0 3px 10px rgba(50, 36, 22, 0.16),
+    0 1px 3px rgba(50, 36, 22, 0.1),
+    inset 0 1px 1.5px rgba(255, 245, 230, 0.45),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.35) !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  user-select: none;
+}
+
+.cockpit-dark-chip:hover,
+.se-chip:hover,
+.sk-tag:not(.ok):hover,
+.sg-digest:hover,
+.sg-chip:hover,
+.se-count:hover,
+.cc-chip:hover,
+.cc-tchip.is-sel:hover {
+  background: 
+    linear-gradient(180deg, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0.06) 42%, transparent 100%),
+    linear-gradient(145deg, #483d33 0%, #352b22 55%, #282019 100%) !important;
+  border-color: rgba(245, 215, 180, 0.8) !important;
+  border-top-color: rgba(255, 255, 255, 0.95) !important;
+  box-shadow: 
+    0 6px 20px rgba(50, 36, 22, 0.26),
+    0 0 14px rgba(245, 200, 155, 0.32),
+    inset 0 1px 2px rgba(255, 255, 255, 0.7),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.3) !important;
+  transform: translateY(-1px) !important;
+}
+
+.cockpit-dark-chip:active,
+.se-chip:active,
+.sk-tag:not(.ok):active,
+.sg-digest:active,
+.sg-chip:active,
+.se-count:active,
+.cc-chip:active,
+.cc-tchip.is-sel:active {
+  transform: translateY(1px) !important;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* The Light Beam Shimmer that sweeps across when hovered */
+.cockpit-dark-chip::after,
+.se-chip::after,
+.sk-tag:not(.ok)::after,
+.sg-digest::after,
+.sg-chip::after,
+.se-count::after,
+.cc-chip::after,
+.cc-tchip.is-sel::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -75%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 235, 210, 0.08) 20%,
+    rgba(255, 255, 255, 0.32) 50%,
+    rgba(255, 235, 210, 0.08) 80%,
+    transparent 100%
+  );
+  transform: skewX(-20deg);
+  pointer-events: none;
+}
+
+.cockpit-dark-chip:hover::after,
+.se-chip:hover::after,
+.sk-tag:not(.ok):hover::after,
+.sg-digest:hover::after,
+.sg-chip:hover::after,
+.se-count:hover::after,
+.cc-chip:hover::after,
+.cc-tchip.is-sel:hover::after {
+  animation: shine-sweep 0.65s ease-out forwards;
+}
+
+/* 5. LUMINOUS GLASS LED JEWEL BULBS */
+.led-jewel {
+  width: 9px;
+  height: 9px;
+  border-radius: 9999px;
+  position: relative;
+  display: inline-block;
+  flex: none;
+}
+
+.led-jewel-emerald {
+  background: radial-gradient(circle at 35% 35%, #86efac 0%, #10b981 60%, #065f46 100%);
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.75), 0 0 2px #10b981;
+}
+
+.led-jewel-amber {
+  background: radial-gradient(circle at 35% 35%, #fde68a 0%, #f59e0b 60%, #92400e 100%);
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.75), 0 0 2px #f59e0b;
+}
+
+.led-jewel-rose {
+  background: radial-gradient(circle at 35% 35%, #fca5a5 0%, #ef4444 60%, #991b1b 100%);
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.75), 0 0 2px #ef4444;
+}
+
+.recessed-well--pill { border-radius: 9999px; }
+.recessed-well--pad-sm { padding: 4px; }
+.recessed-well--pad-md { padding: 8px; }
+
+/* Luminous, fluid cylinders progress fill */
+.recessed-progress {
+  height: 8px;
+  border-radius: 9999px;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.recessed-progress__fill {
+  height: 100%;
+  border-radius: 9999px;
+  transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2), inset 0 1px 1px rgba(255, 255, 255, 0.6);
+}
+
+.tone-emerald .recessed-progress__fill { background: linear-gradient(90deg, #10b981, #059669); box-shadow: 0 0 10px rgba(16, 185, 129, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.7); }
+.tone-amber .recessed-progress__fill   { background: linear-gradient(90deg, #f59e0b, #d97706); box-shadow: 0 0 10px rgba(245, 158, 11, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.7); }
+.tone-rose .recessed-progress__fill    { background: linear-gradient(90deg, #f43f5e, #e11d48); box-shadow: 0 0 10px rgba(244, 63, 94, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.7); }
+.tone-sky .recessed-progress__fill     { background: linear-gradient(90deg, #0ea5e9, #0284c7); box-shadow: 0 0 10px rgba(14, 165, 233, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.7); }
+.tone-neutral .recessed-progress__fill { background: linear-gradient(90deg, #a8a29e, #78716c); }
+
+/* ------------------------------------------------------------------ */
+/* 3. .cockpit-dark-chip (Polished Smoked Umber & Specular Sheen)     */
+/* ------------------------------------------------------------------ */
+
+.cockpit-dark-chip {
+  background: 
+    linear-gradient(180deg, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0.04) 42%, rgba(0, 0, 0, 0.08) 43%, transparent 100%),
+    linear-gradient(145deg, #3f352c 0%, #2e261f 55%, #231c16 100%) !important;
+  border: 1px solid rgba(225, 195, 165, 0.45) !important;
+  border-top-color: rgba(255, 245, 230, 0.75) !important;
+  border-bottom-color: rgba(135, 105, 80, 0.45) !important;
+  color: rgba(246, 238, 226, 0.96) !important;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-size: 11px;
+  letter-spacing: 0.03em;
+  box-shadow: 
+    0 3px 10px rgba(50, 36, 22, 0.16),
+    0 1px 3px rgba(50, 36, 22, 0.1),
+    inset 0 1px 1.5px rgba(255, 245, 230, 0.45),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.35) !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.cockpit-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid rgba(215, 208, 195, 0.85);
+  color: var(--ink-secondary);
+  box-shadow: 0 1px 3px rgba(140, 125, 105, 0.08), inset 0 1px 1px rgba(255, 255, 255, 0.95);
+  transition: all 0.15s ease;
+}
+
+.cockpit-chip:hover {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(185, 175, 160, 0.9);
+  transform: translateY(-1px);
+}
+
+.cockpit-chip--dark {
+  background: 
+    linear-gradient(180deg, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0.04) 42%, rgba(0, 0, 0, 0.08) 43%, transparent 100%),
+    linear-gradient(145deg, #3f352c 0%, #2e261f 55%, #231c16 100%) !important;
+  border: 1px solid rgba(225, 195, 165, 0.45) !important;
+  border-top-color: rgba(255, 245, 230, 0.75) !important;
+  border-bottom-color: rgba(135, 105, 80, 0.45) !important;
+  color: rgba(246, 238, 226, 0.96) !important;
+  box-shadow: 
+    0 3px 10px rgba(50, 36, 22, 0.16),
+    0 1px 3px rgba(50, 36, 22, 0.1),
+    inset 0 1px 1.5px rgba(255, 245, 230, 0.45),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.35) !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* ------------------------------------------------------------------ */
+/* 4. Optical Convex Lens Indicators (LED pips with bloom)            */
+/* ------------------------------------------------------------------ */
+
+.optical-led,
+.led-pip {
+  display: inline-block;
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 9999px;
+  position: relative;
+  transition: all 0.2s ease;
+  animation: chip-breathe 3s ease-in-out infinite;
+}
+
+.optical-led--emerald,
+.led-pip--emerald {
+  color: #10B981;
+  background: radial-gradient(circle at 35% 35%, #ffffff 0%, #10B981 55%, rgba(6, 78, 59, 0.8) 100%);
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.85), 0 0 20px rgba(16, 185, 129, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.8);
+}
+
+.optical-led--amber,
+.led-pip--amber {
+  color: #F59E0B;
+  background: radial-gradient(circle at 35% 35%, #ffffff 0%, #F59E0B 55%, rgba(120, 53, 15, 0.8) 100%);
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.85), 0 0 20px rgba(245, 158, 11, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.8);
+}
+
+.optical-led--rose,
+.led-pip--rose {
+  color: #EF4444;
+  background: radial-gradient(circle at 35% 35%, #ffffff 0%, #EF4444 55%, rgba(127, 29, 29, 0.8) 100%);
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.85), 0 0 20px rgba(239, 68, 68, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.8);
+}
+
+.optical-led--sky,
+.led-pip--sky {
+  color: #0EA5E9;
+  background: radial-gradient(circle at 35% 35%, #ffffff 0%, #0EA5E9 55%, rgba(12, 74, 110, 0.8) 100%);
+  box-shadow: 0 0 10px rgba(14, 165, 233, 0.85), 0 0 20px rgba(14, 165, 233, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.8);
+}
+
+.led-pip--still,
+.optical-led--still {
+  animation: none;
+}
+
+@keyframes chip-breathe {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.75;
+    transform: scale(0.92);
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* 5. Tactile Buttons & Controls                                      */
+/* ------------------------------------------------------------------ */
+
+.auth-btn,
+.se-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 7px 14px;
+  border-radius: 12px;
+  background: linear-gradient(145deg, #ffffff 0%, #ebe5d8 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.9) !important;
+  border-bottom-color: rgba(160, 145, 125, 0.3) !important;
+  color: #2b2621 !important;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 
+    3px 4px 10px rgba(140, 125, 105, 0.16),
+    -2px -2px 6px rgba(255, 255, 255, 0.95),
+    inset 0 1px 1px rgba(255, 255, 255, 0.8) !important;
+  transition: all 0.15s ease;
+}
+
+.auth-btn:hover,
+.se-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 
+    4px 6px 14px rgba(130, 115, 95, 0.22),
+    -2px -2px 6px rgba(255, 255, 255, 1),
+    inset 0 1px 1.5px rgba(255, 255, 255, 1) !important;
+}
+
+.auth-btn:active,
+.se-btn:active {
+  transform: translateY(1px) !important;
+  box-shadow: 
+    inset 2px 2px 5px rgba(130, 115, 95, 0.25),
+    inset -1px -1px 3px rgba(255, 255, 255, 0.8) !important;
+}
+
+/* Heavy Rose Hazard / Physical Safety Switch */
+.btn-hazard-rose,
+.auth-btn--danger,
+.se-btn--danger {
+  background: radial-gradient(circle at 35% 25%, #ff5258 0%, #e11d48 55%, #9f1239 100%);
+  border: 1px solid #881337;
+  color: #ffffff;
+  box-shadow: 0 5px 0 #700c28, 0 10px 20px rgba(225, 29, 72, 0.35), inset 0 2px 0 rgba(255, 255, 255, 0.45);
+  transition: transform 0.08s ease, box-shadow 0.08s ease;
+}
+
+.btn-hazard-rose:hover,
+.auth-btn--danger:hover,
+.se-btn--danger:hover {
+  background: radial-gradient(circle at 35% 25%, #ff6b70 0%, #f43f5e 55%, #be123c 100%);
+  box-shadow: 0 6px 0 #700c28, 0 14px 26px rgba(225, 29, 72, 0.45), inset 0 2px 0 rgba(255, 255, 255, 0.5);
+  transform: translateY(-1px);
+}
+
+.btn-hazard-rose:active,
+.auth-btn--danger:active,
+.se-btn--danger:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 #700c28, 0 4px 8px rgba(112, 12, 40, 0.4), inset 0 2px 0 rgba(255, 255, 255, 0.45);
+}
+
+/* ------------------------------------------------------------------ */
+/* 6. Clean Table Styling                                             */
+/* ------------------------------------------------------------------ */
+
+.se-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 12.5px;
+}
+
+.se-table th {
+  padding: 9px 12px;
+  font-weight: 700;
+  color: var(--ink-secondary);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  border-bottom: 1px solid rgba(215, 208, 195, 0.8);
+  text-align: left;
+}
+
+.se-table td {
+  padding: 10px 12px;
+  color: var(--ink-primary);
+  border-bottom: 1px solid rgba(215, 208, 195, 0.4);
+  vertical-align: middle;
+}
+
+.se-table tr:hover td {
+  background: rgba(255, 255, 255, 0.4);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .optical-led,
+  .led-pip {
+    animation: none;
+  }
+  .skin-glass-card,
+  .skin-glass,
+  .auth-btn,
+  .se-btn,
+  .nav-pill {
+    transition: none;
+    transform: none;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* 7. Tactical Navigation Pills (Image 2 Reference Style)             */
+/* ------------------------------------------------------------------ */
+
+.nav-pill-track {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding: 4px 2px;
+}
+
+.nav-pill-track::-webkit-scrollbar {
+  display: none;
+}
+
+.nav-pill {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 10px;
+  padding: 9.5px 14px 9.5px 13px;
+  border-radius: 14px;
+  background: linear-gradient(145deg, #ffffff 0%, #ebe5d8 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.95) !important;
+  border-bottom-color: rgba(170, 155, 135, 0.35) !important;
+  border-right-color: rgba(180, 165, 145, 0.35) !important;
+  box-shadow: 
+    2px 3px 8px rgba(140, 125, 105, 0.12),
+    -1px -1px 4px rgba(255, 255, 255, 0.95),
+    inset 0 1px 1.5px rgba(255, 255, 255, 1) !important;
+  color: #44403c !important;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+  text-decoration: none;
+  overflow: hidden;
+}
+
+.nav-pill:hover {
+  background: #ffffff !important;
+  color: #1c1917 !important;
+  transform: translateY(-1.5px);
+  box-shadow: 
+    3px 6px 14px rgba(130, 115, 95, 0.18),
+    -2px -2px 6px rgba(255, 255, 255, 1),
+    inset 0 1px 2px rgba(255, 255, 255, 1) !important;
+}
+
+.nav-pill:active {
+  transform: translateY(1px);
+  box-shadow: 
+    inset 2px 2px 5px rgba(130, 115, 95, 0.22),
+    inset -1px -1px 3px rgba(255, 255, 255, 0.8) !important;
+}
+
+/* Active Pill: Crisp white with prominent emerald left accent border just like Image 2 */
+.nav-pill[aria-selected="true"],
+.nav-pill.active {
+  background: #ffffff !important;
+  color: #1c1917 !important;
+  font-weight: 800 !important;
+  border: 1px solid rgba(255, 255, 255, 1) !important;
+  border-left: 4.5px solid #10b981 !important;
+  padding-left: 10px !important;
+  box-shadow: 
+    0 6px 18px rgba(120, 105, 85, 0.18),
+    0 2px 6px rgba(16, 185, 129, 0.2),
+    inset 0 1px 2px rgba(255, 255, 255, 1) !important;
+  transform: translateY(-1px);
+}
+
+.nav-pill-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #78716c;
+  transition: color 0.15s ease;
+}
+
+.nav-pill[aria-selected="true"] .nav-pill-icon {
+  color: #10b981;
+}
+
+/* Right-side mini pill badge like D3 Live, AI, 3D Twin in Image 2 */
+.nav-pill-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 7.5px;
+  border-radius: 9999px;
+  font-size: 10px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  letter-spacing: -0.01em;
+  background: rgba(230, 222, 210, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  color: #6e675f;
+  box-shadow: inset 1px 1px 2px rgba(140, 125, 105, 0.08);
+}
+
+.nav-pill[aria-selected="true"] .nav-pill-badge {
+  background: rgba(16, 185, 129, 0.12);
+  border-color: rgba(16, 185, 129, 0.35);
+  color: #047857;
+}
+
+/* =========================================================================
+   8. SHINY ESPRESSO BUTTON WITH HOVER LIGHT SWEEP
+   ========================================================================= */
+.shiny-dark-button,
+button.cockpit-dark-chip {
+  position: relative;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: 
+    linear-gradient(180deg, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0.04) 42%, rgba(0, 0, 0, 0.08) 43%, transparent 100%),
+    linear-gradient(145deg, #3f352c 0%, #2e261f 55%, #231c16 100%) !important;
+  border: 1px solid rgba(225, 195, 165, 0.45) !important;
+  border-top-color: rgba(255, 245, 230, 0.75) !important;
+  border-bottom-color: rgba(135, 105, 80, 0.45) !important;
+  border-radius: 11px !important;
+  color: rgba(246, 238, 226, 0.96) !important;
+  font-family: ui-monospace, SFMono-Regular, monospace !important;
+  font-weight: 700 !important;
+  font-size: 13px !important;
+  letter-spacing: 0.03em !important;
+  cursor: pointer !important;
+  box-shadow: 
+    0 4px 14px rgba(50, 36, 22, 0.2),
+    0 1px 3px rgba(50, 36, 22, 0.1),
+    inset 0 1px 1.5px rgba(255, 245, 230, 0.5),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.35) !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.shiny-dark-button:hover,
+button.cockpit-dark-chip:hover {
+  background: 
+    linear-gradient(180deg, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0.06) 42%, transparent 100%),
+    linear-gradient(145deg, #483d33 0%, #352b22 55%, #282019 100%) !important;
+  border-color: rgba(245, 215, 180, 0.8) !important;
+  border-top-color: rgba(255, 255, 255, 0.95) !important;
+  box-shadow: 
+    0 6px 22px rgba(50, 36, 22, 0.28),
+    0 0 16px rgba(245, 200, 155, 0.32),
+    inset 0 1px 2px rgba(255, 255, 255, 0.7),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.3) !important;
+  transform: translateY(-1px) !important;
+}
+
+.shiny-dark-button:active,
+button.cockpit-dark-chip:active {
+  transform: translateY(1px) !important;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* The Light Beam Shimmer that sweeps across when hovered */
+.shiny-dark-button::after,
+button.cockpit-dark-chip::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -75%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 235, 210, 0.08) 20%,
+    rgba(255, 255, 255, 0.28) 50%,
+    rgba(255, 235, 210, 0.08) 80%,
+    transparent 100%
+  );
+  transform: skewX(-20deg);
+  pointer-events: none;
+}
+
+.shiny-dark-button:hover::after,
+button.cockpit-dark-chip:hover::after {
+  animation: shine-sweep 0.65s ease-out forwards;
+}
+
+@keyframes shine-sweep {
+  0% {
+    left: -75%;
+  }
+  100% {
+    left: 140%;
+  }
+}
