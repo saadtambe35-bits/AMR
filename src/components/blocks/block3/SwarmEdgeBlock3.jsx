@@ -450,18 +450,38 @@ export function HazardDrawingOverlay({
         </defs>
 
         {/* Existing Committed Hazards with Delete Interaction */}
-        {hazards.map((h) => (
-          <g key={h.id}>
-            <polygon
-              points={pts2s(h.poly)}
-              fill={`url(#hz-${h.type})`}
-              stroke={col(h.type)}
-              strokeWidth="2.2"
-              vectorEffect="non-scaling-stroke"
-              style={{ filter: `drop-shadow(0 0 6px ${col(h.type)}66)` }}
-            />
-          </g>
-        ))}
+        {hazards.map((h) => {
+          const center = h.poly.reduce(
+            (acc, p) => ({ x: acc.x + p.x / h.poly.length, y: acc.y + p.y / h.poly.length }),
+            { x: 0, y: 0 }
+          );
+          return (
+            <g
+              key={h.id}
+              style={{ cursor: "pointer", pointerEvents: "auto" }}
+              onClick={(e) => {
+                e.stopPropagation();
+                onDeleteHazard?.(h.id);
+              }}
+            >
+              <polygon
+                points={pts2s(h.poly)}
+                fill={`url(#hz-${h.type})`}
+                stroke={col(h.type)}
+                strokeWidth="2.2"
+                vectorEffect="non-scaling-stroke"
+                style={{ filter: `drop-shadow(0 0 6px ${col(h.type)}66)` }}
+              >
+                <title>Click to delete {h.type} hazard zone</title>
+              </polygon>
+              {/* Subtle interactive delete icon in center of polygon */}
+              <g transform={`translate(${center.x}, ${center.y})`} style={{ pointerEvents: "none" }}>
+                <circle r="0.45" fill="rgba(15, 23, 42, 0.9)" stroke={col(h.type)} strokeWidth="0.08" />
+                <text x="0" y="0.15" textAnchor="middle" fontSize="0.42" fill="#ffffff" fontWeight="bold">✕</text>
+              </g>
+            </g>
+          );
+        })}
 
         {/* Live Active Preview & What-If Ghost Routes */}
         {preview && (

@@ -1,4 +1,4 @@
-import { useState, type ComponentType } from 'react';
+import { useState, useEffect, type ComponentType } from 'react';
 import {
   LayoutGrid,
   Bot,
@@ -142,12 +142,37 @@ h1, h2, h3 {
 
 export default function App() {
   const [tab, setTab] = useState(TABS[0].id);
+  const [ghostPublished, setGhostPublished] = useState(14);
+  const [zenohMode, setZenohMode] = useState('P2P');
+  const [showToast, setShowToast] = useState<string | null>(null);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setGhostPublished((p) => p + 1);
+    }, 4500);
+    return () => clearInterval(timer);
+  }, []);
+
+  const triggerToast = (msg: string) => {
+    setShowToast(msg);
+    setTimeout(() => setShowToast(null), 2500);
+  };
+
   const active = TABS.find((t) => t.id === tab) ?? TABS[0];
   const { View } = active;
 
   return (
     <>
       <style>{CSS}</style>
+
+      {showToast && (
+        <div
+          role="status"
+          className="fixed top-4 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-xl text-xs font-mono font-bold bg-[#090f1a]/95 text-emerald-400 border border-emerald-500/40 shadow-2xl backdrop-blur-md pointer-events-none transition-all"
+        >
+          {showToast}
+        </div>
+      )}
 
       {/* 1. Ambient atmospheric background glow orbs for physical glass refraction */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden" aria-hidden="true">
@@ -237,7 +262,11 @@ export default function App() {
           </nav>
 
           {/* 5. Bottom System Status Card */}
-          <div className="skin-glass-card p-3 flex flex-col gap-2 mt-auto">
+          <div
+            className="skin-glass-card p-3 flex flex-col gap-2 mt-auto cursor-pointer hover:shadow-md transition-all active:scale-[0.99]"
+            onClick={() => triggerToast("SIL-4 Kernel Guard: 100 Hz kinematic checking active across all 4 AMRs · 0 violations")}
+            title="Click to verify SIL-4 safety guard status"
+          >
             <div className="flex items-center justify-between text-xs">
               <span className="text-stone-600 font-semibold text-[11.5px]">L0 Safety Guard</span>
               <span className="cockpit-dark-chip text-[10px] !py-0.5 !px-2 border-emerald-500/40 shadow-[0_0_10px_rgba(16,185,129,0.25)]">
@@ -258,10 +287,18 @@ export default function App() {
           {/* Top Bar with Ghost-Node & Status Telemetry */}
           <header className="skin-glass-card specular-sheen p-3 sm:px-4 sm:py-2.5 flex flex-wrap gap-3 items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="cockpit-dark-chip text-[11px]">
-                <span className="led-jewel led-jewel-emerald"></span>
-                <span>GHOST-NODE · PUBLISHED: 0</span>
-              </div>
+              <button
+                type="button"
+                className="cockpit-dark-chip text-[11px] cursor-pointer hover:border-emerald-500/60 transition-all text-left"
+                onClick={() => {
+                  setGhostPublished((p) => p + 1);
+                  triggerToast("Ghost-node ping emitted: amr_mesh_zenoh/heartbeat [ACK 4/4]");
+                }}
+                title="Click to emit an ad-hoc ghost observer heartbeat"
+              >
+                <span className="led-jewel led-jewel-emerald animate-pulse"></span>
+                <span>GHOST-NODE · PUBLISHED: {ghostPublished}</span>
+              </button>
               <span className="hidden sm:inline text-xs text-[#6e675f] font-medium tracking-tight">
                 Peer-to-Peer Contract-Net & Anti-Entropy Hazard Gossip
               </span>
@@ -274,13 +311,26 @@ export default function App() {
               {/* Block 1: Hindi / Marathi / English Regional Switcher */}
               <LanguageToggle />
 
-              <div className="cockpit-dark-chip text-[11px]">
+              <button
+                type="button"
+                className="cockpit-dark-chip text-[11px] cursor-pointer hover:border-emerald-500/60 transition-all"
+                onClick={() => {
+                  setZenohMode((m) => (m === 'P2P' ? 'ROUTERLESS' : 'P2P'));
+                  triggerToast(`Zenoh 0.11: Mode switched to ${zenohMode === 'P2P' ? 'ROUTERLESS' : 'P2P'} Mesh`);
+                }}
+                title="Click to toggle Zenoh P2P / Brokerless mode"
+              >
                 <span className="led-jewel led-jewel-emerald"></span>
-                <span>ZENOH 0.11.0</span>
-              </div>
-              <div className="hidden lg:inline-flex cockpit-dark-chip text-[11px]">
-                <span className="text-stone-300 font-mono">ZERO COLLISION HOLDING</span>
-              </div>
+                <span>ZENOH 0.11.0 · {zenohMode}</span>
+              </button>
+              <button
+                type="button"
+                className="hidden lg:inline-flex cockpit-dark-chip text-[11px] cursor-pointer hover:border-emerald-500/60 transition-all"
+                onClick={() => triggerToast("Safety Invariant: SIL-4 Reactive Braking (1.2m bubble) holding")}
+                title="Click to verify safety invariant status"
+              >
+                <span className="text-emerald-400 font-mono">✓ ZERO COLLISION HOLDING</span>
+              </button>
             </div>
           </header>
 

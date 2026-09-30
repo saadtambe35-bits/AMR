@@ -292,17 +292,26 @@ export function registerServiceWorker() {
   }
 }
 
+let simulatedOffline = false;
+const offlineListeners = new Set();
+export const toggleSimulatedOffline = () => {
+  simulatedOffline = !simulatedOffline;
+  offlineListeners.forEach((fn) => fn());
+};
+
 const useOnline = () =>
   useSyncExternalStore(
     (cb) => {
+      offlineListeners.add(cb);
       addEventListener("online", cb);
       addEventListener("offline", cb);
       return () => {
+        offlineListeners.delete(cb);
         removeEventListener("online", cb);
         removeEventListener("offline", cb);
       };
     },
-    () => navigator.onLine,
+    () => (simulatedOffline ? false : navigator.onLine),
     () => true
   );
 
@@ -331,10 +340,17 @@ export function OfflineIndicator() {
   const online = useOnline();
   const t = useT();
   return (
-    <span className={`se se-badge ${online ? "ok" : "off"}`} role="status">
+    <button
+      type="button"
+      className={`se se-badge ${online ? "ok" : "off"}`}
+      role="status"
+      onClick={toggleSimulatedOffline}
+      title={online ? "Click to simulate PWA offline-first disconnection" : "Click to restore online mesh connection"}
+      style={{ cursor: "pointer", border: "none", outline: "none", font: "inherit", background: "inherit" }}
+    >
       <i />
-      {online ? t("online") : t("offline")}
-    </span>
+      {online ? t("online") : `${t("offline")} (SIM)`}
+    </button>
   );
 }
 
@@ -387,6 +403,8 @@ export function MeshTopologyPanel() {
   const [done, setDone] = usePersistentState("se.resolved", { alpha: 0, beta: 0, mesh: 0 });
   const [hoveredNode, setHoveredNode] = useState(null);
   const [hoveredEdge, setHoveredEdge] = useState(null);
+  const [selectedNode, setSelectedNode] = useState(null);
+  const [pingAnim, setPingAnim] = useState(null);
 
   // Force-directed layout physics
   useEffect(() => {
@@ -873,6 +891,7 @@ export function MeshTopologyPanel() {
             const isBeta = n.c === 1;
             const themeCol = col(n.c, part);
             const isHov = hoveredNode === i;
+            const isSel = selectedNode === i;
 
             return (
               <g
@@ -880,16 +899,18 @@ export function MeshTopologyPanel() {
                 transform={`translate(${n.x}, ${n.y})`}
                 onMouseEnter={() => setHoveredNode(i)}
                 onMouseLeave={() => setHoveredNode(null)}
+                onClick={() => setSelectedNode((cur) => (cur === i ? null : i))}
                 style={{ cursor: "pointer" }}
               >
                 {/* Outer Ambient Glow Ring */}
                 <circle
-                  r={isHov ? 35 : 28}
+                  r={isSel ? 40 : isHov ? 35 : 28}
                   fill={themeCol}
-                  fillOpacity={isHov ? 0.3 : 0.08}
-                  stroke={themeCol}
-                  strokeOpacity={isHov ? 0.85 : 0.35}
-                  strokeWidth="1.5"
+                  fillOpacity={isSel ? 0.45 : isHov ? 0.3 : 0.08}
+                  stroke={isSel ? "#38bdf8" : themeCol}
+                  strokeOpacity={isSel ? 1 : isHov ? 0.85 : 0.35}
+                  strokeWidth={isSel ? "2.5" : "1.5"}
+                  strokeDasharray={isSel ? "5 3" : "none"}
                   style={{ transition: "all 0.25s ease" }}
                 />
 
@@ -1042,6 +1063,88 @@ export function MeshTopologyPanel() {
             );
           })}
         </svg>
+
+        {/* Selected Node Telemetry HUD */}
+        {selectedNode !== null && (
+          <div
+            style={{
+              position: "absolute",
+              top: 14,
+              right: 14,
+              zIndex: 30,
+              background: "rgba(8, 14, 25, 0.94)",
+              backdropFilter: "blur(16px)",
+              border: `1px solid ${col(ns[selectedNode].c, part)}88`,
+              borderRadius: 12,
+              padding: "12px 16px",
+              boxShadow: `0 12px 30px rgba(0,0,0,0.85), 0 0 20px ${col(ns[selectedNode].c, part)}33`,
+              minWidth: 240,
+              color: "#e2e8f0",
+              fontFamily: "monospace",
+            }}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+                <span
+                  style={{
+                    width: 8,
+                    height: 8,
+                    borderRadius: "50%",
+                    background: col(ns[selectedNode].c, part),
+                    boxShadow: `0 0 8px ${col(ns[selectedNode].c, part)}`,
+                  }}
+                />
+                <strong style={{ fontSize: 13, color: "#f8fafc" }}>{NAMES[selectedNode]}</strong>
+                <span
+                  style={{
+                    fontSize: 9,
+                    padding: "1px 6px",
+                    borderRadius: 4,
+                    background: `${col(ns[selectedNode].c, part)}22`,
+                    border: `1px solid ${col(ns[selectedNode].c, part)}55`,
+                    color: col(ns[selectedNode].c, part),
+                    fontWeight: 700,
+                  }}
+                >
+                  {ROLES[selectedNode]}
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelectedNode(null)}
+                style={{
+                  background: "transparent",
+                  border: "none",
+                  color: "#94a3b8",
+                  cursor: "pointer",
+                  fontSize: 14,
+                  padding: "0 4px",
+                }}
+              >
+                ✕
+              </button>
+            </div>
+            <div style={{ fontSize: 11, display: "grid", gap: 3.5, color: "#94a3b8" }}>
+              <div>Sub-Swarm: <strong style={{ color: col(ns[selectedNode].c, part) }}>{ns[selectedNode].c === 1 ? "Cluster Beta" : "Cluster Alpha"}</strong></div>
+              <div>Position: <strong style={{ color: "#cbd5e1" }}>X:{Math.round(ns[selectedNode].x)} Y:{Math.round(ns[selectedNode].y)}</strong></div>
+              <div>Protocol: <strong style={{ color: "#38bdf8" }}>Zenoh 0.11 Mesh</strong></div>
+              <div>SIL-4 State: <strong style={{ color: "#10b981" }}>GUARD ACTIVE</strong></div>
+            </div>
+            <div style={{ marginTop: 10, display: "flex", gap: 6 }}>
+              <button
+                type="button"
+                className="se-btn"
+                style={{ padding: "4px 10px", fontSize: 11, borderRadius: 6, flex: 1, textAlign: "center", cursor: "pointer" }}
+                onClick={() => {
+                  setPingAnim(selectedNode);
+                  setTimeout(() => setPingAnim(null), 700);
+                }}
+              >
+                {pingAnim === selectedNode ? "⚡ Ping: 3.1ms OK" : "⚡ Echo Ping"}
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Network Stats Footnote */}

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 
 export interface EdgeRobotMetric {
   robot_id: string;
@@ -45,6 +45,8 @@ export interface EdgeProfilerProps {
 }
 
 export function EdgeProfiler({ metrics = robots, fleetPoints = fleet }: EdgeProfilerProps) {
+  const [selectedRobot, setSelectedRobot] = useState<string | null>(null);
+  const [selectedFleet, setSelectedFleet] = useState<number | null>(null);
   const maxFleet = Math.max(...fleetPoints.map((p) => p.fleetKbps));
 
   return (
@@ -59,8 +61,9 @@ export function EdgeProfiler({ metrics = robots, fleetPoints = fleet }: EdgeProf
         .ep-panel{background:#eae5d9 !important;border:1px solid rgba(255, 255, 255, 0.6) !important;border-top-color:rgba(160, 148, 130, 0.28) !important;border-left-color:rgba(160, 148, 130, 0.22) !important;border-radius:14px;padding:14px;box-shadow:inset 3px 3px 6px rgba(150, 138, 120, 0.25), inset -2px -2px 5px rgba(255, 255, 255, 0.92) !important;}
         .ep-panel-title{font-size:10px;letter-spacing:.12em;font-weight:800;color:#57534e;margin-bottom:12px;text-transform:uppercase}
         .ep-robots{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
-        .ep-robot{padding:12px;border:1px solid rgba(255, 255, 255, 0.95);background:linear-gradient(135deg, rgba(255, 255, 255, 0.92) 0%, rgba(255, 255, 255, 0.72) 100%);border-radius:12px;box-shadow:0 4px 10px rgba(150, 135, 115, 0.12), inset 0 1px 1px #fff;transition:transform 0.15s ease,box-shadow 0.15s ease}
+        .ep-robot{padding:12px;border:1px solid rgba(255, 255, 255, 0.95);background:linear-gradient(135deg, rgba(255, 255, 255, 0.92) 0%, rgba(255, 255, 255, 0.72) 100%);border-radius:12px;box-shadow:0 4px 10px rgba(150, 135, 115, 0.12), inset 0 1px 1px #fff;transition:transform 0.15s ease,box-shadow 0.15s ease,border-color 0.15s ease;cursor:pointer;}
         .ep-robot:hover{transform:translateY(-1px);box-shadow:0 8px 18px rgba(150, 135, 115, 0.16), inset 0 1px 1px #fff}
+        .ep-robot.is-active{border-color:#0284c7 !important;box-shadow:0 0 16px rgba(2,132,199,0.28), inset 0 1px 1px #fff !important;}
         .ep-robot-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
         .ep-id{font:800 12px ui-monospace,"JetBrains Mono",monospace;color:#231f1c}
         .ep-platform{font-size:9px;color:rgba(235, 220, 200, 0.92);background:linear-gradient(160deg, #241d18 0%, #16120f 100%) !important;border:1px solid rgba(217, 180, 150, 0.35) !important;padding:2px 6px;border-radius:6px;font-weight:700;font-family:ui-monospace,Menlo,monospace;box-shadow:0 2px 6px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.15);text-shadow:0 1px 2px rgba(0,0,0,0.6);}
@@ -72,8 +75,9 @@ export function EdgeProfiler({ metrics = robots, fleetPoints = fleet }: EdgeProf
         .ep-limit{font-size:8.5px;color:#57534e;margin-top:4px;font-family:ui-monospace,"JetBrains Mono",monospace}
         .ep-limit b{color:#231f1c}
         .ep-scale{display:flex;align-items:end;gap:8px;height:170px;padding:12px 6px 24px;border-bottom:1px solid rgba(215, 208, 195, 0.8)}
-        .ep-bar-wrap{height:100%;flex:1;display:flex;align-items:end;justify-content:center;position:relative}
-        .ep-bar{width:48%;min-height:5px;background:linear-gradient(180deg,#0ea5e9,#3e3832);border:1px solid rgba(14, 165, 233, 0.5);border-radius:5px 5px 0 0;box-shadow:0 2px 6px rgba(14, 165, 233, 0.2)}
+        .ep-bar-wrap{height:100%;flex:1;display:flex;align-items:end;justify-content:center;position:relative;cursor:pointer;}
+        .ep-bar{width:48%;min-height:5px;background:linear-gradient(180deg,#0ea5e9,#3e3832);border:1px solid rgba(14, 165, 233, 0.5);border-radius:5px 5px 0 0;box-shadow:0 2px 6px rgba(14, 165, 233, 0.2);transition:all 0.15s ease;}
+        .ep-bar.is-sel{background:linear-gradient(180deg,#38bdf8,#0284c7);box-shadow:0 0 12px rgba(56,189,248,0.6);}
         .ep-bar-label{position:absolute;bottom:-20px;font:9px ui-monospace,"JetBrains Mono",monospace;color:#57534e}
         .ep-value{position:absolute;top:-16px;font:800 9.5px ui-monospace,"JetBrains Mono",monospace;font-variant-numeric:tabular-nums;color:#0284c7}
         .ep-note{font-size:9.5px;color:#57534e;line-height:1.6;margin-top:12px;font-weight:500}
@@ -90,36 +94,64 @@ export function EdgeProfiler({ metrics = robots, fleetPoints = fleet }: EdgeProf
 
       <div className="ep-layout">
         <div className="ep-panel">
-          <div className="ep-panel-title">ROBOT EDGE RESOURCES</div>
+          <div className="ep-panel-title">ROBOT EDGE RESOURCES (CLICK TO INSPECT THREADS)</div>
           <div className="ep-robots">
-            {metrics.map((r) => (
-              <div className="ep-robot" key={r.robot_id}>
-                <div className="ep-robot-head">
-                  <span className="ep-id">{r.robot_id}</span>
-                  <span className="ep-platform">{r.platform}</span>
+            {metrics.map((r) => {
+              const active = selectedRobot === r.robot_id;
+              return (
+                <div
+                  className={`ep-robot ${active ? "is-active" : ""}`}
+                  key={r.robot_id}
+                  onClick={() => setSelectedRobot((c) => (c === r.robot_id ? null : r.robot_id))}
+                  title={`Click to inspect real-time edge telemetry for ${r.robot_id}`}
+                >
+                  <div className="ep-robot-head">
+                    <span className="ep-id">{r.robot_id} {active ? "✓" : ""}</span>
+                    <span className="ep-platform">{r.platform}</span>
+                  </div>
+                  <Gauge value={r.cpu_pct} max={40} label="CPU / 1 CORE" unit="%" limit="< 40%" />
+                  <Gauge value={r.rss_mb} max={300} label="RSS MEMORY" unit=" MB" limit="< 300 MB" />
+                  <Gauge value={r.zenoh_kbps} max={12} label="ZENOH" unit=" kbps" limit="zone-local" />
+                  {active && (
+                    <div style={{ marginTop: 8, paddingTop: 6, borderTop: "1px dashed rgba(160,148,130,0.4)", fontSize: "9px", fontFamily: "monospace", color: "#0369a1" }}>
+                      <div>• zenoh.loc: 50 Hz</div>
+                      <div>• heartbeat: 10 Hz</div>
+                      <div>• contract_net: on-demand</div>
+                    </div>
+                  )}
                 </div>
-                <Gauge value={r.cpu_pct} max={40} label="CPU / 1 CORE" unit="%" limit="< 40%" />
-                <Gauge value={r.rss_mb} max={300} label="RSS MEMORY" unit=" MB" limit="< 300 MB" />
-                <Gauge value={r.zenoh_kbps} max={12} label="ZENOH" unit=" kbps" limit="zone-local" />
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
         <div className="ep-panel">
           <div className="ep-panel-title">ZENOH BANDWIDTH vs FLEET SIZE</div>
           <div className="ep-scale">
-            {fleetPoints.map((p) => (
-              <div className="ep-bar-wrap" key={p.robots}>
-                <span className="ep-value">{p.kbpsPerRobot.toFixed(1)}</span>
-                <div className="ep-bar" style={{height:`${Math.max(5,(p.fleetKbps/maxFleet)*100)}%`}} />
-                <span className="ep-bar-label">{p.robots}R</span>
-              </div>
-            ))}
+            {fleetPoints.map((p) => {
+              const isSel = selectedFleet === p.robots;
+              return (
+                <div
+                  className="ep-bar-wrap"
+                  key={p.robots}
+                  onClick={() => setSelectedFleet((c) => (c === p.robots ? null : p.robots))}
+                  title={`Click to focus on ${p.robots} robot swarm scale`}
+                >
+                  <span className="ep-value">{p.kbpsPerRobot.toFixed(1)}</span>
+                  <div className={`ep-bar ${isSel ? "is-sel" : ""}`} style={{height:`${Math.max(5,(p.fleetKbps/maxFleet)*100)}%`}} />
+                  <span className="ep-bar-label">{p.robots}R</span>
+                </div>
+              );
+            })}
           </div>
           <div className="ep-note">
             Per-robot Zenoh traffic stays within a narrow <b>8.7–9.1 kbps</b> envelope as the fleet scales
             from <b>3 → 30 robots</b>. <span className="ep-flat">ZONE SHARDING: FLAT PER-ROBOT BANDWIDTH</span>.
+            {selectedFleet && (
+              <div style={{ marginTop: 6, color: "#0284c7", fontWeight: 700 }}>
+                Selected: {selectedFleet} Robots · Fleet Total: {fleetPoints.find((p) => p.robots === selectedFleet)?.fleetKbps.toFixed(1)} kbps
+              </div>
+            )}
           </div>
         </div>
       </div>

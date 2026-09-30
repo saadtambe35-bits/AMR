@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { GhostNodeHeader } from './GhostNodeHeader';
 import { FleetList } from './FleetList';
 import { LeaseQueuePanel } from './LeaseQueuePanel';
@@ -134,6 +134,14 @@ export default function FleetCockpit() {
   const [isLive, setIsLive] = useState(true);
   const [timelineSeconds, setTimelineSeconds] = useState(14.8);
 
+  useEffect(() => {
+    if (!isLive) return;
+    const interval = setInterval(() => {
+      setTimelineSeconds((prev) => +(prev + 0.1).toFixed(1));
+    }, 100);
+    return () => clearInterval(interval);
+  }, [isLive]);
+
   const selectedRobot = robots.find((r) => r.id === selectedRobotId) ?? null;
 
   const handleToggleWifi = (robotId: string, isolate: boolean) => {
@@ -144,7 +152,13 @@ export default function FleetCockpit() {
 
   const handleKillProcess = (robotId: string) => {
     setRobots((prev) =>
-      prev.map((r) => (r.id === robotId ? { ...r, state: 'FAULT', speedMps: 0, online: false } : r))
+      prev.map((r) =>
+        r.id === robotId
+          ? r.state === 'FAULT'
+            ? { ...r, state: 'CRUISING', speedMps: 1.2, online: true }
+            : { ...r, state: 'FAULT', speedMps: 0, online: false }
+          : r
+      )
     );
   };
 
@@ -186,6 +200,7 @@ export default function FleetCockpit() {
         robot={selectedRobot}
         onClose={() => setSelectedRobotId(null)}
         onToggleWifiIsolation={handleToggleWifi}
+        onKillProcess={handleKillProcess}
       />
     </div>
   );

@@ -729,6 +729,20 @@ function Map2D() {
 /*  Main LiveCanvas Studio with Rail Controls, Camera Presets & Speed Boost   */
 /* -------------------------------------------------------------------------- */
 
+function B({ on, fn, children, cls = "", title }) {
+  return (
+    <button
+      type="button"
+      className={cls}
+      aria-pressed={!!on}
+      onClick={fn}
+      title={title}
+    >
+      {children}
+    </button>
+  );
+}
+
 export function LiveCanvas() {
   const t = useT();
   const root = useRef();
@@ -747,12 +761,6 @@ export function LiveCanvas() {
 
   const toggleFs = () =>
     document.fullscreenElement ? document.exitFullscreen() : root.current.requestFullscreen?.();
-
-  const B = ({ on, fn, children, cls, title }) => (
-    <button className={cls} aria-pressed={!!on} onClick={fn} title={title}>
-      {children}
-    </button>
-  );
 
   const activeRobotsCount = s.robots.filter((r) => r.order).length;
 

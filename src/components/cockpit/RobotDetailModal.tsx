@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useId, useRef } from 'react';
-import { AlertTriangle, Compass, Crosshair, MapPin, Route, Users, WifiOff, Wifi, X } from 'lucide-react';
+import { AlertTriangle, Compass, Crosshair, MapPin, Power, Route, Users, WifiOff, Wifi, X } from 'lucide-react';
 import type { HazardEntry, Robot } from './types';
 import {
   CockpitChip,
@@ -16,6 +16,7 @@ export interface RobotDetailModalProps {
   robot: Robot | null;
   onClose: () => void;
   onToggleWifiIsolation?: (robotId: string, isolate: boolean) => void;
+  onKillProcess?: (robotId: string) => void;
 }
 
 const FOCUSABLE = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
@@ -45,7 +46,7 @@ function KeyValue({ label, value }: { label: string; value: string }) {
   );
 }
 
-export function RobotDetailModal({ robot, onClose, onToggleWifiIsolation }: RobotDetailModalProps) {
+export function RobotDetailModal({ robot, onClose, onToggleWifiIsolation, onKillProcess }: RobotDetailModalProps) {
   const dialogRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
   const titleId = useId();
@@ -143,11 +144,26 @@ export function RobotDetailModal({ robot, onClose, onToggleWifiIsolation }: Robo
               </div>
             </div>
             <div style={{ display: 'flex', gap: 8 }}>
+              {onKillProcess && (
+                <button
+                  type="button"
+                  className={`se-btn ${robot.state === 'FAULT' ? '' : 'se-btn--danger'}`}
+                  style={{
+                    background: robot.state === 'FAULT' ? '#10b981' : undefined,
+                    color: robot.state === 'FAULT' ? '#ffffff' : undefined,
+                    borderColor: robot.state === 'FAULT' ? '#059669' : undefined,
+                  }}
+                  onClick={() => onKillProcess(robot.id)}
+                >
+                  <Power size={13} aria-hidden="true" />
+                  {robot.state === 'FAULT' ? 'Restore Robot' : 'Kill Process'}
+                </button>
+              )}
               {onToggleWifiIsolation ? (
                 <button
                   type="button"
                   className="se-btn se-btn--warn"
-                  disabled={!robot.online}
+                  disabled={!robot.online && robot.state !== 'FAULT'}
                   onClick={() => onToggleWifiIsolation(robot.id, !robot.wifiIsolated)}
                 >
                   {robot.wifiIsolated ? <Wifi size={13} aria-hidden="true" /> : <WifiOff size={13} aria-hidden="true" />}

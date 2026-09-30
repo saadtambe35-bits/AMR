@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 
 /* ---------- deterministic paired-seed simulation ---------- */
 const N_SEEDS = 30;
@@ -26,8 +26,8 @@ const quantile = (sorted: number[], q: number) => {
   return sorted[lo] + (sorted[hi] - sorted[lo]) * (p - lo);
 };
 
-function simulate() {
-  const rng = mulberry32(20260930);
+function simulate(seedOffset = 0) {
+  const rng = mulberry32(20260930 + seedOffset * 101);
   const shared = Array.from({ length: N_SEEDS }, () => gauss(rng) * 7); // same warehouse seed => shared difficulty
   const runs = {} as Record<Key, number[]>;
   (Object.keys(REF) as Key[]).forEach((k) => {
@@ -53,7 +53,8 @@ function simulate() {
 
 /* ---------- component ---------- */
 export default function BenchmarkDashboard() {
-  const sim = useMemo(simulate, []);
+  const [seedOffset, setSeedOffset] = useState(0);
+  const sim = useMemo(() => simulate(seedOffset), [seedOffset]);
   const TARGET = 20;
   const pass = sim.ci[0] >= TARGET;
 
@@ -65,7 +66,18 @@ export default function BenchmarkDashboard() {
 
   return (
     <section className="se-glass" aria-labelledby="bench-h" style={{ padding: 24 }}>
-      <h2 id="bench-h" style={{ margin: 0, fontSize: 22, color: '#292524', fontWeight: 800 }}>Makespan benchmark: {N_SEEDS} paired seeds</h2>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginBottom: 6 }}>
+        <h2 id="bench-h" style={{ margin: 0, fontSize: 22, color: '#292524', fontWeight: 800 }}>Makespan benchmark: {N_SEEDS} paired seeds</h2>
+        <button
+          type="button"
+          className="se-btn"
+          style={{ padding: '6px 14px', fontSize: '12px', cursor: 'pointer' }}
+          onClick={() => setSeedOffset((s) => s + 1)}
+          title="Run another set of 30 paired Monte Carlo seeds"
+        >
+          ↺ Resample 30 Seeds {seedOffset > 0 ? `(#${seedOffset + 1})` : ''}
+        </button>
+      </div>
       <p className="se-muted" style={{ margin: '6px 0 18px', maxWidth: 620, color: '#78716c' }}>
         Each seed runs all three strategies on the same warehouse layout and order stream. The reduction is
         computed per seed against B0, then bootstrapped ({N_BOOT.toLocaleString()} resamples).

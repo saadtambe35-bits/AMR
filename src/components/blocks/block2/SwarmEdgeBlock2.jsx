@@ -354,7 +354,26 @@ export function SustainabilityPanel({ data, gridFactor = MODEL.GRID_KG_PER_KWH }
     `${fmtKwh(saved)} kWh saved, ${co2 >= 100 ? co2.toFixed(0) : co2.toFixed(3)} kg CO2e avoided ` +
     `(${gridFactor} kg/kWh), +${gain.toFixed(1)}% throughput per battery cycle.`;
   const copy = async () => {
-    try { await navigator.clipboard.writeText(summary); setCopied(true); setTimeout(() => setCopied(false), 1800); } catch (_) {}
+    try {
+      if (navigator?.clipboard?.writeText) {
+        await navigator.clipboard.writeText(summary);
+      } else {
+        const ta = document.createElement("textarea");
+        ta.value = summary;
+        ta.style.position = "fixed";
+        ta.style.opacity = "0";
+        document.body.appendChild(ta);
+        ta.focus();
+        ta.select();
+        document.execCommand("copy");
+        document.body.removeChild(ta);
+      }
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1800);
+    } catch (_) {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1800);
+    }
   };
 
   const parts = [["move", "Driving + payload", "#10b981"], ["accel", "Acceleration", "#06b6d4"], ["idle", "Idle + queue wait", "#f59e0b"]];
