@@ -972,16 +972,45 @@ export default function ServerKillDuel({ seed = 42, fleetSize = 5, className, on
         <div className="sk-center">
           <div className={`sk-console ${guardOpen ? 'is-open' : ''} ${killed ? 'is-spent' : ''}`}>
             <div className="sk-hazard" aria-hidden="true" />
-            <button
-              type="button"
-              className="sk-kill"
-              onClick={kill}
-              disabled={killed || !guardOpen}
-              aria-label="Kill central coordinator"
-            >
-              <span className="sk-kill-emoji" aria-hidden="true">⚡</span>
-              <span>KILL CENTRAL COORDINATOR</span>
-            </button>
+
+            <div className="sk-switch-housing">
+              <button
+                type="button"
+                className="sk-kill"
+                onClick={kill}
+                disabled={killed || !guardOpen}
+                aria-label="Kill central coordinator"
+              >
+                <span className="sk-kill-emoji" aria-hidden="true">⚡</span>
+                <span>KILL CENTRAL COORDINATOR</span>
+              </button>
+
+              {/* Physical Flip-Up Ballistic Glass Safety Cover */}
+              <div
+                className={`sk-glass-guard ${guardOpen ? 'is-open' : 'is-closed'}`}
+                onClick={() => !killed && setGuardOpen((o) => !o)}
+                title={guardOpen ? "Click to close glass guard" : "Click to lift glass guard"}
+                aria-hidden="true"
+              >
+                <div className="sk-glass-hinge">
+                  <span className="sk-hinge-bolt" />
+                  <span className="sk-hinge-pin" />
+                  <span className="sk-hinge-bolt" />
+                </div>
+                <div className="sk-glass-panel">
+                  <div className="sk-glass-glare" />
+                  <div className="sk-glass-label">
+                    <span className="sk-glass-lock-icon">🔒</span>
+                    <span>SAFETY INTERLOCK</span>
+                  </div>
+                  <div className="sk-glass-lip">
+                    <span className="sk-lip-grip" />
+                    <span className="sk-lip-text">LIFT TO ARM</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <button
               type="button"
               className="sk-guard"
@@ -989,7 +1018,7 @@ export default function ServerKillDuel({ seed = 42, fleetSize = 5, className, on
               aria-expanded={guardOpen}
               disabled={killed}
             >
-              {killed ? 'Coordinator terminated' : guardOpen ? 'Guard open · Armed' : 'Lift guard to arm'}
+              {killed ? 'Coordinator terminated' : guardOpen ? 'Close glass guard' : 'Lift guard to arm'}
             </button>
           </div>
           <p className="sk-center-note">
@@ -1276,7 +1305,13 @@ const CSS = `
   background: repeating-linear-gradient(-45deg, #eab308 0 10px, #0b1322 10px 20px);
   border: 1px solid rgba(234, 179, 8, 0.4);
 }
+.sk-switch-housing {
+  position: relative;
+  width: 100%;
+  perspective: 800px;
+}
 .sk-kill {
+  width: 100%;
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 12px;
   min-height: 112px;
@@ -1314,6 +1349,140 @@ const CSS = `
     box-shadow: 0 6px 0 #700c28, 0 0 28px 8px rgba(239, 68, 68, 0.8), inset 0 1px 2px rgba(255, 255, 255, 0.5);
   }
 }
+
+/* Realistic Physical 3D Ballistic Glass Flip Safety Cover */
+.sk-glass-guard {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  transform-origin: top center;
+  transition: transform 0.45s cubic-bezier(0.34, 1.35, 0.64, 1), box-shadow 0.4s ease;
+  transform-style: preserve-3d;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Top Heavy Steel Hinge */
+.sk-glass-hinge {
+  height: 9px;
+  background: linear-gradient(180deg, #475569 0%, #1e293b 50%, #0f172a 100%);
+  border: 1px solid #64748b;
+  border-radius: 4px 4px 0 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+.sk-hinge-bolt {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #cbd5e1;
+  box-shadow: inset 0 1px 1px #000;
+}
+.sk-hinge-pin {
+  height: 2px;
+  flex: 1;
+  margin: 0 6px;
+  background: #94a3b8;
+  border-radius: 1px;
+}
+
+/* Main Ballistic Glass Panel */
+.sk-glass-panel {
+  flex: 1;
+  position: relative;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.24) 0%, rgba(255, 255, 255, 0.06) 50%, rgba(14, 165, 233, 0.15) 100%);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  border: 1.5px solid rgba(255, 255, 255, 0.5);
+  border-top: none;
+  border-radius: 0 0 12px 12px;
+  box-shadow:
+    inset 0 1px 2px rgba(255, 255, 255, 0.8),
+    inset 0 -2px 6px rgba(0, 0, 0, 0.4),
+    0 8px 24px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 8px;
+}
+
+/* Diagonal Specular Reflection Glare across the Glass */
+.sk-glass-glare {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(115deg,
+    transparent 35%,
+    rgba(255, 255, 255, 0.38) 45%,
+    rgba(255, 255, 255, 0.1) 50%,
+    transparent 58%
+  );
+}
+
+/* Interlock Label stenciled on the glass */
+.sk-glass-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  font: 800 10px ui-monospace, Menlo, monospace;
+  letter-spacing: 0.08em;
+  color: #f8fafc;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+  background: rgba(15, 23, 42, 0.65);
+  border: 1px dashed rgba(255, 255, 255, 0.4);
+  border-radius: 4px;
+  padding: 4px 6px;
+  margin-top: 4px;
+}
+.sk-glass-lock-icon {
+  font-size: 11px;
+}
+
+/* Bottom Finger Lift Lip */
+.sk-glass-lip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  background: rgba(234, 179, 8, 0.2);
+  border: 1px solid rgba(234, 179, 8, 0.5);
+  border-radius: 4px;
+  padding: 3px 6px;
+}
+.sk-lip-grip {
+  width: 24px;
+  height: 3px;
+  background: repeating-linear-gradient(90deg, #facc15 0 2px, transparent 2px 4px);
+  border-radius: 1px;
+}
+.sk-lip-text {
+  font: 700 8.5px ui-monospace, Menlo, monospace;
+  color: #fef08a;
+  letter-spacing: 0.06em;
+}
+
+/* State: OPEN / LIFTED */
+.sk-glass-guard.is-open {
+  transform: rotateX(115deg) translateY(-8px);
+  box-shadow: 0 -14px 28px rgba(0, 0, 0, 0.85), 0 0 20px rgba(14, 165, 233, 0.4);
+  pointer-events: auto;
+}
+
+/* State: CLOSED */
+.sk-glass-guard.is-closed {
+  transform: rotateX(0deg);
+}
+.sk-glass-guard.is-closed:hover .sk-glass-panel {
+  border-color: rgba(255, 255, 255, 0.8);
+  box-shadow: inset 0 1px 3px rgba(255, 255, 255, 0.95), 0 8px 26px rgba(0, 0, 0, 0.65);
+}
+
 .sk-guard {
   border: 1px solid rgba(234, 179, 8, 0.4);
   background: rgba(234, 179, 8, 0.12);
