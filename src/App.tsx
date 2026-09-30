@@ -191,8 +191,8 @@ export default function App() {
         <aside className="w-full md:w-[270px] lg:w-[290px] shrink-0 flex flex-col gap-3">
           {/* 1. Header / Logo Card */}
           <div className="skin-glass-card p-3.5 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-100 to-amber-200/80 border border-white/90 shadow-sm flex items-center justify-center text-xl shrink-0">
-              🤖
+            <div className="w-10 h-10 rounded-xl overflow-hidden bg-gradient-to-br from-amber-100 to-amber-200/80 border border-white/90 shadow-sm flex items-center justify-center shrink-0">
+              <img src="/robot_avatar.png" alt="SwarmEdge Robot" className="w-full h-full object-contain p-0.5 select-none" />
             </div>
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
